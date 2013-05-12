@@ -22,20 +22,14 @@ struct node
 }s[100100];
 __int64 q[200100];
 node tree[200100<<2];
-void init(int nn)
-{
-    for(int ii=1;ii<=(nn<<2);ii++)
-        {
-            tree[ii].xxmi=M;
-            tree[ii].mi=N;
-        }
-    return ;
-}
 void build(int ll,int rr,int nn)
 {
     int mid=(ll+rr)>>1;
     tree[nn].x=ll;
     tree[nn].y=rr;
+    tree[nn].xxmi=M;
+    tree[nn].mi=N;
+    tree[nn].mm=0;
     if(ll==rr)return ;
     build(ll,mid,nn<<1);
     build(mid+1,rr,(nn<<1)+1);
@@ -44,17 +38,16 @@ int inse(int ll,int rr,int nn,int num,int next)
 {
     int mid=(tree[nn].x+tree[nn].y)>>1;
     next=MAX(tree[nn].mi,next);
+    if(num<tree[nn].mi)return 0;
     if(ll==tree[nn].x&&rr==tree[nn].y)
     {
-        cout<<"rrrr"<<endl;
-        cout<<tree[nn].mi<<endl;
+       if(num>tree[nn].xxmi)return 0;
        if(tree[nn].mi==N||tree[nn].mi==num)
         {
+            tree[nn].mi=num;
             if(num<=tree[nn].xxmi&&tree[nn].xxmi==M)
             {
-            cout<<"ll = "<<ll<<' '<<"rr = "<<rr<<' '<<num<<endl;
             mark=1;
-            tree[nn].mi=num;
             __int64 tt=(q[tree[nn].y]-q[tree[nn].x]+1);
             tree[nn].mm+=tt*num;
             return (num-next)*tt;
@@ -69,20 +62,19 @@ int inse(int ll,int rr,int nn,int num,int next)
             }
             return 0;
         }
+        return 0;
     }
     tree[nn].xxmi=MIN(tree[nn].xxmi,num);
     if(mid>=rr)
-          {
-              __int64 uu=inse(ll,rr,nn<<1,num,next);
-              tree[nn].mm+=uu;
-              return uu;
-          }
+      {
+        __int64 uu=inse(ll,rr,nn<<1,num,next);
+        tree[nn].mm+=uu;
+        return uu;
+      }
     else if(mid<ll)
        {
-          // cout<<ll<<' '<<"rr = "<<rr<<' '<<num<<endl;
            __int64 uu=inse(ll,rr,(nn<<1)+1,num,next);
            tree[nn].mm+=uu;
-         //  cout<<nn<<' '<<tree[nn].mm<<endl;
            return uu;
        }
     else
@@ -93,6 +85,7 @@ int inse(int ll,int rr,int nn,int num,int next)
         tree[nn].mm+=uu2;
         return uu1+uu2;
     }
+    return 0;
 }
 int main()
 {
@@ -105,7 +98,6 @@ int main()
         mmark=0;
         vector<__int64> w;
         scanf("%d",&m);
-        init(m*2);
         for(i=1;i<=m;i++)
            {
                 scanf("%I64d%I64d%I64d",&s[i].x,&s[i].y,&s[i].mm);
@@ -115,7 +107,6 @@ int main()
         sort(w.begin(),w.end());
         w.erase(unique(w.begin(),w.end()),w.end());
         #define FIND(v)(lower_bound(w.begin(),w.end(),v)-w.begin())
-        cout<<"tttt"<<endl;
         build(1,w.size(),1);
         for(i=1;i<=m;i++)
         {
@@ -125,7 +116,7 @@ int main()
             q[xx]=s[i].x;
             q[yy]=s[i].y;
             inse(xx,yy,1,s[i].mm,0);
-            if(mark==0)mmark=1;
+            if(mark==0){mmark=1;break;}
         }
         if(mmark==1)printf("Error\n");
         else printf("%I64d\n",tree[1].mm);
@@ -133,4 +124,13 @@ int main()
     }
     return 0;
 }
-
+/*
+wa data
+5
+5
+1000 2000 6
+1000 1500 10
+1000 1001 15
+1 2 1
+2 3 1
+*/
